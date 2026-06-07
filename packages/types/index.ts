@@ -1,27 +1,14 @@
-export interface LoginRequest {
+export type UserRole = "ADMIN" | "STAFF" | "CLIENT";
+
+export interface RegisterRequest {
+  name: string;
   email: string;
   password: string;
 }
 
-export interface LoginResponse {
-  success: boolean;
-  token?: string;
-  message?: string;
-}
-
-export interface CreateAccountRequest {
-  userId: string;
-  accountType: "SAVINGS" | "CURRENT";
-}
-
-export interface TransferFundsRequest {
-  fromAccountId: string;
-  toAccountId: string;
-  amount: number;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
 }
