@@ -9,6 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fortress/config": "workspace:*",
+    "@fortress/types": "workspace:*",
+    "@fortress/ui": "workspace:*",
+    "@fortress/utils": "workspace:*",
     "next": "16.2.7",
     "react": "19.2.4",
     "react-dom": "19.2.4"
