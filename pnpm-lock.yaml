@@ -94,6 +94,9 @@ importers:
       '@fortress/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@fortress/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@fortress/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -139,6 +142,8 @@ importers:
         version: 5.9.3
 
   packages/config: {}
+
+  packages/database: {}
 
   packages/types: {}
 

@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@fortress/config": "workspace:*",
+    "@fortress/database": "workspace:*",
     "@fortress/types": "workspace:*",
     "@fortress/ui": "workspace:*",
     "@fortress/utils": "workspace:*",
