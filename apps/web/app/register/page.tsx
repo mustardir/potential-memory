@@ -17,8 +17,8 @@ export default function RegisterPage() {
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
-    alert(data.message);
+     console.log(data);
+alert(JSON.stringify(data, null, 2));
   }
 
   return (
