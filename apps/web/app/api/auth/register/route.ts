@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
 try {
 const body = await req.json();
 
-const { firstName, lastName, email, password } = body;
+const {
+  firstName,
+  lastName,
+  email,
+  password,
+} = body;
 
-if (!firstName || !lastName || !email || !password) {
+if (
+  !firstName ||
+  !lastName ||
+  !email ||
+  !password
+) {
   return NextResponse.json(
     {
       success: false,
@@ -17,31 +28,45 @@ if (!firstName || !lastName || !email || !password) {
   );
 }
 
-if (password.length < 8) {
+const existingUser = await prisma.user.findUnique({
+  where: {
+    email: email.toLowerCase(),
+  },
+});
+
+if (existingUser) {
   return NextResponse.json(
     {
       success: false,
-      message: "Password must be at least 8 characters",
+      message: "Email already registered",
     },
-    { status: 400 }
+    { status: 409 }
   );
 }
 
-const hashedPassword = await bcrypt.hash(password, 12);
+const passwordHash = await bcrypt.hash(
+  password,
+  12
+);
 
-// TODO:
-// Save user to database using Prisma/TiDB
-// Check if email already exists
-// Send verification email
+const user = await prisma.user.create({
+  data: {
+    firstName,
+    lastName,
+    email: email.toLowerCase(),
+    passwordHash,
+  },
+});
 
 return NextResponse.json(
   {
     success: true,
     message: "Account created successfully",
     user: {
-      firstName,
-      lastName,
-      email,
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
     },
   },
   { status: 201 }
