@@ -1,51 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
 try {
 const body = await req.json();
 
-const { firstName, lastName, email, password } = body;
+const { email, password } = body;
 
-if (!firstName || !lastName || !email || !password) {
+if (!email || !password) {
   return NextResponse.json(
     {
       success: false,
-      message: "All fields are required",
+      message: "Email and password are required",
     },
     { status: 400 }
   );
 }
 
-if (password.length < 8) {
-  return NextResponse.json(
-    {
-      success: false,
-      message: "Password must be at least 8 characters",
-    },
-    { status: 400 }
-  );
-}
-
-const hashedPassword = await bcrypt.hash(password, 12);
-
-// TODO:
-// Save user to database using Prisma/TiDB
-// Check if email already exists
-// Send verification email
-
-return NextResponse.json(
-  {
-    success: true,
-    message: "Account created successfully",
-    user: {
-      firstName,
-      lastName,
-      email,
-    },
+const user = await prisma.user.findUnique({
+  where: {
+    email: email.toLowerCase(),
   },
-  { status: 201 }
+});
+
+if (!user) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Invalid credentials",
+    },
+    { status: 401 }
+  );
+}
+
+const validPassword = await bcrypt.compare(
+  password,
+  user.passwordHash
 );
+
+if (!validPassword) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Invalid credentials",
+    },
+    { status: 401 }
+  );
+}
+
+return NextResponse.json({
+  success: true,
+  message: "Login successful",
+  user: {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+  },
+});
 
 } catch (error) {
 console.error(error);
@@ -53,7 +66,7 @@ console.error(error);
 return NextResponse.json(
   {
     success: false,
-    message: "Registration failed",
+    message: "Login failed",
   },
   { status: 500 }
 );
