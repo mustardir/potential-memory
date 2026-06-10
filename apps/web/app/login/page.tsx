@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,20 +20,22 @@ export default function LoginPage() {
     });
 
     const data = await response.json();
-    console.log(data);
+
     alert(data.message);
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md p-6">
-        <h1 className="text-3xl font-bold mb-6">Login</h1>
+    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <Card>
+        <h1 className="mb-6 text-center text-3xl font-bold">
+          Welcome Back
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
-            className="w-full border p-3 rounded"
+            className="w-full rounded-lg border p-3"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -39,19 +43,16 @@ export default function LoginPage() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full border p-3 rounded"
+            className="w-full rounded-lg border p-3"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button
-            type="submit"
-            className="w-full bg-black text-white p-3 rounded"
-          >
+          <Button type="submit">
             Login
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </main>
   );
 }
