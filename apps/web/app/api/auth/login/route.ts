@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { createSessionResponse } from "@/lib/auth";
+import { loginSchema } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
 try {
 const body = await req.json();
+const parseResult = loginSchema.safeParse(body);
+if (!parseResult.success) {
+  return NextResponse.json({ success: false, message: "Invalid request payload", errors: parseResult.error.format() }, { status: 400 });
+}
 
-const { email, password } = body;
+const { email, password } = parseResult.data;
 
 if (!email || !password) {
   return NextResponse.json(

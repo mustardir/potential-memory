@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { investmentSchema } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,11 +25,12 @@ export async function POST(req: NextRequest) {
   try {
     const user = await requireUser(req);
     const body = await req.json();
-    const { name, principalAmount, returnRate, startDate, maturityDate, currency = "USD", description } = body;
-
-    if (!name || typeof principalAmount !== "number" || principalAmount <= 0) {
-      return NextResponse.json({ success: false, message: "Invalid payload" }, { status: 400 });
+    const parseResult = investmentSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json({ success: false, message: "Invalid request payload", errors: parseResult.error.format() }, { status: 400 });
     }
+
+    const { name, principalAmount, returnRate, startDate, maturityDate, currency, description } = parseResult.data;
 
     const investment = await prisma.investment.create({
       data: {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { transactionSchema } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,11 +27,12 @@ export async function POST(req: NextRequest) {
   try {
     const user = await requireUser(req);
     const body = await req.json();
-    const { type, amount, currency = "USD", description, recipientWalletId } = body;
-
-    if (!type || typeof amount !== "number" || amount <= 0) {
-      return NextResponse.json({ success: false, message: "Invalid payload" }, { status: 400 });
+    const parseResult = transactionSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json({ success: false, message: "Invalid request payload", errors: parseResult.error.format() }, { status: 400 });
     }
+
+    const { type, amount, currency, description, recipientWalletId } = parseResult.data;
 
     // Fetch user's wallet
     const senderWallet = await prisma.wallet.findUnique({ where: { userId: user.id } });
