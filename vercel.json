@@ -1,0 +1,9 @@
+{
+  "version": 3,
+  "projects": [
+    {
+      "name": "web",
+      "rootDirectory": "apps/web"
+    }
+  ]
+}
