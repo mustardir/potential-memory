@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { createSessionResponse } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
 try {
@@ -36,7 +37,8 @@ if (!user) {
 
 const validPassword = await bcrypt.compare(
   password,
-  user.passwordHash
+  // Prisma schema defines `password` field
+  user.password
 );
 
 if (!validPassword) {
@@ -49,7 +51,7 @@ if (!validPassword) {
   );
 }
 
-return NextResponse.json({
+return createSessionResponse(user.id, {
   success: true,
   message: "Login successful",
   user: {

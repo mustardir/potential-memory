@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { createSessionResponse } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
 try {
@@ -54,11 +55,13 @@ const user = await prisma.user.create({
     firstName,
     lastName,
     email: email.toLowerCase(),
-    passwordHash,
+    // Prisma schema defines `password` field
+    password: passwordHash,
   },
 });
 
-return NextResponse.json(
+return createSessionResponse(
+  user.id,
   {
     success: true,
     message: "Account created successfully",
