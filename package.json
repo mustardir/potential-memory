@@ -2,5 +2,8 @@
 	"devDependencies": {
 		"turbo": "^2.9.16",
 		"typescript": "^6.0.3"
+	},
+	"dependencies": {
+		"ai": "^6.0.205"
 	}
 }
