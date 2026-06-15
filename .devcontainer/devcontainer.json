@@ -27,7 +27,7 @@
     }
   },
 
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "sh .devcontainer/install-git-lfs.sh && pnpm install",
 
   "customizations": {
     "vscode": {
