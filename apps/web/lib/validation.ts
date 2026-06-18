@@ -29,3 +29,13 @@ export const investmentSchema = z.object({
   currency: z.string().min(1).optional().default("USD"),
   description: z.string().max(500).optional(),
 });
+
+export const profileSchema = z.object({
+  address: z.string().max(255).optional(),
+  city: z.string().max(100).optional(),
+  country: z.string().max(100).optional(),
+  postalCode: z.string().max(20).optional(),
+  dateOfBirth: z.string().optional(),
+  occupation: z.string().max(100).optional(),
+  nationality: z.string().max(100).optional(),
+});

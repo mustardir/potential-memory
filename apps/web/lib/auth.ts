@@ -1,11 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 
 const SESSION_COOKIE = "session_token";
 
+function createSessionToken() {
+  const bytes = new Uint8Array(48);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 export async function createSessionResponse(userId: string, body: any = { success: true }, init?: ResponseInit) {
-  const token = crypto.randomBytes(48).toString("hex");
+  const token = createSessionToken();
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
 
   await prisma.session.create({
@@ -48,25 +53,46 @@ export async function clearSessionResponse(req: NextRequest, body: any = { succe
   return res;
 }
 
-export async function getUserFromRequest(req: NextRequest) {
-  try {
-    const cookie = req.cookies.get(SESSION_COOKIE);
-    const token = cookie?.value;
-    if (!token) return null;
+export async function getUserFromToken(token?: string | null) {
+  if (!token) return null;
 
+  try {
     const session = await prisma.session.findUnique({
       where: { token },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            status: true,
+          },
+        },
+      },
     });
 
     if (!session) return null;
-    if (session.expiresAt <= new Date()) return null;
+    if (session.expiresAt <= new Date()) {
+      await prisma.session.deleteMany({ where: { token } });
+      return null;
+    }
+
+    if (session.user.status !== "ACTIVE") {
+      return null;
+    }
 
     return session.user;
   } catch (err) {
     console.error(err);
     return null;
   }
+}
+
+export async function getUserFromRequest(req: NextRequest) {
+  const cookie = req.cookies.get(SESSION_COOKIE);
+  return getUserFromToken(cookie?.value);
 }
 
 export async function requireUser(req: NextRequest) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { requireUser } from "@/lib/auth";
 import { transactionSchema } from "@/lib/validation";
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     if (type === "DEPOSIT") {
       // Increase balance and record transaction
-      const tx = await prisma.$transaction(async (prismaTx) => {
+      const tx = await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
         const updated = await prismaTx.wallet.update({ where: { id: senderWallet.id }, data: { balance: { increment: amount } } });
         const transaction = await prismaTx.transaction.create({ data: { userId: user.id, walletId: senderWallet.id, type: "DEPOSIT", status: "COMPLETED", amount: amount.toString(), currency, description } });
         return { updated, transaction };
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, message: "Insufficient funds" }, { status: 400 });
       }
 
-      const tx = await prisma.$transaction(async (prismaTx) => {
+      const tx = await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
         const updated = await prismaTx.wallet.update({ where: { id: senderWallet.id }, data: { balance: { decrement: amount } } });
         const transaction = await prismaTx.transaction.create({ data: { userId: user.id, walletId: senderWallet.id, type: "WITHDRAWAL", status: "COMPLETED", amount: amount.toString(), currency, description } });
         return { updated, transaction };
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
       const recipientWallet = await prisma.wallet.findUnique({ where: { id: recipientWalletId } });
       if (!recipientWallet) return NextResponse.json({ success: false, message: "Recipient wallet not found" }, { status: 404 });
 
-      const result = await prisma.$transaction(async (prismaTx) => {
+      const result = await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
         const debit = await prismaTx.wallet.update({ where: { id: senderWallet.id }, data: { balance: { decrement: amount } } });
         const credit = await prismaTx.wallet.update({ where: { id: recipientWallet.id }, data: { balance: { increment: amount } } });
         const txDebit = await prismaTx.transaction.create({ data: { userId: user.id, walletId: senderWallet.id, type: "TRANSFER", status: "COMPLETED", amount: amount.toString(), currency, description } });

@@ -1,56 +1,108 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
 
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ firstName, lastName, email, password }),
     });
 
     const data = await response.json();
+    setIsSubmitting(false);
 
-    console.log(data);
-    alert(JSON.stringify(data, null, 2));
+    if (!response.ok || !data.success) {
+      setError(data.message || "Registration failed. Please check your input.");
+      return;
+    }
+
+    router.push("/dashboard");
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-        <h1 className="text-3xl font-bold">Register</h1>
+    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-lg">
+        <h1 className="text-3xl font-bold mb-6">Create your account</h1>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border p-3 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border p-3 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">First name</span>
+              <input
+                type="text"
+                placeholder="First name"
+                className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:border-black focus:outline-none"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </label>
 
-        <button
-          type="submit"
-          className="w-full bg-black text-white p-3 rounded"
-        >
-          Register
-        </button>
-      </form>
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Last name</span>
+              <input
+                type="text"
+                placeholder="Last name"
+                className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:border-black focus:outline-none"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">Email</span>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:border-black focus:outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">Password</span>
+            <input
+              type="password"
+              placeholder="Create a strong password"
+              className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:border-black focus:outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-lg bg-black px-5 py-3 text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? "Creating account..." : "Register"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
