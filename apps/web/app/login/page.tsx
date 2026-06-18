@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,32 +16,47 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    setIsSubmitting(false);
+      const data = await response.json();
 
-    if (!response.ok || !data.success) {
-      setError(data.message || "Login failed. Please check your credentials.");
-      return;
+      if (!response.ok || !data.success) {
+        setError(data.message || "Login failed. Please check your credentials.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push("/dashboard");
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-lg">
-        <h1 className="text-3xl font-bold mb-6">Login</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="text-black font-medium underline underline-offset-2 hover:opacity-70">
+            Register here
+          </Link>
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          ) : null}
 
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Email</span>
@@ -71,7 +87,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full rounded-lg bg-black px-5 py-3 text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Signing in..." : "Login"}
+            {isSubmitting ? "Signing in…" : "Login"}
           </button>
         </form>
       </div>
