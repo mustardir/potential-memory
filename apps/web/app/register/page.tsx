@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,32 +18,47 @@ export default function RegisterPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ firstName, lastName, email, password }),
-    });
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ firstName, lastName, email, password }),
+      });
 
-    const data = await response.json();
-    setIsSubmitting(false);
+      const data = await response.json();
 
-    if (!response.ok || !data.success) {
-      setError(data.message || "Registration failed. Please check your input.");
-      return;
+      if (!response.ok || !data.success) {
+        setError(data.message || "Registration failed. Please check your input.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push("/dashboard");
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-lg">
-        <h1 className="text-3xl font-bold mb-6">Create your account</h1>
+        <h1 className="text-3xl font-bold mb-2">Create your account</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Already have an account?{" "}
+          <Link href="/login" className="text-black font-medium underline underline-offset-2 hover:opacity-70">
+            Login here
+          </Link>
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
@@ -99,7 +115,7 @@ export default function RegisterPage() {
             disabled={isSubmitting}
             className="w-full rounded-lg bg-black px-5 py-3 text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Creating account..." : "Register"}
+            {isSubmitting ? "Creating account…" : "Register"}
           </button>
         </form>
       </div>
