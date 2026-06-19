@@ -1,0 +1,50 @@
+{
+  "name": "Fortress Finance Web",
+
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers-extra/features/pnpm:2": {
+      "version": "latest"
+    }
+  },
+
+  "containerEnv": {
+    "PNPM_STORE_DIR": "/home/vscode/.pnpm-store"
+  },
+
+  "mounts": [
+    "source=pnpm-store,target=/home/vscode/.pnpm-store,type=volume"
+  ],
+
+  "forwardPorts": [3000, 5432],
+
+  "portsAttributes": {
+    "3000": {
+      "label": "Fortress Finance",
+      "onAutoForward": "openBrowser"
+    }
+  },
+
+  "postCreateCommand": "sh .devcontainer/install-git-lfs.sh && pnpm install",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Prisma.prisma",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "GitHub.copilot",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}
