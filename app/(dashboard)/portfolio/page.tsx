@@ -43,12 +43,18 @@ type HoldingsApiResponse = {
 };
 
 async function getHoldings(): Promise<HoldingsApiResponse> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/holdings`, {
+  // Use absolute URL for server-side fetch
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const res = await fetch(`${baseUrl}/api/holdings`, {
     cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch holdings");
+    const error = await res.text();
+    throw new Error(`Failed to fetch holdings: ${res.status} - ${error}`);
   }
 
   return res.json();
